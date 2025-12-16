@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mini_duolingo/data/lesson_providers.dart';
 import 'package:mini_duolingo/data/models/exercise.dart';
 import 'package:mini_duolingo/features/exercise/application/exercise_controller.dart';
+import 'package:mini_duolingo/features/exercise/presentation/widgets/translation_exercise_view.dart';
 
 class ExercisePage extends ConsumerWidget {
   final String lessonId;
@@ -14,7 +15,7 @@ class ExercisePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lessonAsync = ref.watch(lessonByIdProvider(lessonId));
     final exerciseState = ref.watch(exerciseControllerProvider);
-    final exerciseController = ref.watch(exerciseControllerProvider.notifier);
+    final exerciseController = ref.read(exerciseControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: Text('Lesson: $lessonId')),
@@ -25,7 +26,7 @@ class ExercisePage extends ConsumerWidget {
           }
 
           if (lesson.exercises.isEmpty) {
-            return const Center(child: Text('Lesson ini belum punya soal'));
+            return const Center(child: Text('Lesson ini belum punya soal.'));
           }
 
           final totalQuestions = lesson.exercises.length;
@@ -62,11 +63,16 @@ class ExercisePage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                _buildExerciseContent(currentExercise),
+                _buildExerciseContent(currentExercise, exerciseState, (
+                  isCorrect,
+                ) {
+                  exerciseController.submitAnswer(isCorrect: isCorrect);
+                }),
 
                 const Spacer(),
 
-                if (exerciseState.status == ExerciseRunStatus.answering)
+                if (exerciseState.status == ExerciseRunStatus.answering &&
+                    currentExercise.type != ExerciseType.translation)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -105,7 +111,7 @@ class ExercisePage extends ConsumerWidget {
                           );
                         },
                         child: Text(
-                          exerciseState.currentIndex == totalQuestions - 1
+                          currentIndex == totalQuestions - 1
                               ? "Lihat Hasil"
                               : "Soal Berikutnya",
                         ),
@@ -123,28 +129,19 @@ class ExercisePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildExerciseContent(Exercise exercise) {
+  Widget _buildExerciseContent(
+    Exercise exercise,
+    ExerciseState exerciseState,
+    void Function(bool isCorrect) onSubmit,
+  ) {
     switch (exercise.type) {
       case ExerciseType.translation:
-        final data = exercise.translation;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tipe: translation',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Terjemahkan kalimat ini ke bahasa indonesia:',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '"${data?.prompt ?? '-'}"',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
+        final data = exercise.translation!;
+        return TranslationExerciseView(
+          key: ValueKey(exercise.id),
+          data: data,
+          state: exerciseState,
+          onSubmit: onSubmit,
         );
 
       case ExerciseType.wordTiles:
