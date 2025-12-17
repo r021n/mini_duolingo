@@ -5,6 +5,7 @@ import 'package:mini_duolingo/data/lesson_providers.dart';
 import 'package:mini_duolingo/data/models/exercise.dart';
 import 'package:mini_duolingo/features/exercise/application/exercise_controller.dart';
 import 'package:mini_duolingo/features/exercise/presentation/widgets/translation_exercise_view.dart';
+import 'package:mini_duolingo/features/exercise/presentation/widgets/word_tiles_exercise_view.dart';
 
 class ExercisePage extends ConsumerWidget {
   final String lessonId;
@@ -72,7 +73,7 @@ class ExercisePage extends ConsumerWidget {
                 const Spacer(),
 
                 if (exerciseState.status == ExerciseRunStatus.answering &&
-                    currentExercise.type != ExerciseType.translation)
+                    currentExercise.type == ExerciseType.pictureSelection)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -145,32 +146,12 @@ class ExercisePage extends ConsumerWidget {
         );
 
       case ExerciseType.wordTiles:
-        final data = exercise.wordTiles;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tipe: Word Tiles',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Susun kata kata berikut menjadi kalimat yang benar:',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Target kalimat (sementara ditampilkan): "${data?.correctSentence ?? '-'}"',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: (data?.allTokens ?? [])
-                  .map((token) => Chip(label: Text(token)))
-                  .toList(),
-            ),
-          ],
+        final data = exercise.wordTiles!;
+        return WordTilesExerciseView(
+          key: ValueKey(exercise.id),
+          data: data,
+          state: exerciseState,
+          onSubmit: onSubmit,
         );
 
       case ExerciseType.pictureSelection:
