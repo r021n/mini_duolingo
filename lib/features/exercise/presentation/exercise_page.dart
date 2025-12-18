@@ -6,6 +6,7 @@ import 'package:mini_duolingo/data/models/exercise.dart';
 import 'package:mini_duolingo/features/exercise/application/exercise_controller.dart';
 import 'package:mini_duolingo/features/exercise/presentation/widgets/translation_exercise_view.dart';
 import 'package:mini_duolingo/features/exercise/presentation/widgets/word_tiles_exercise_view.dart';
+import 'package:mini_duolingo/features/exercise/presentation/widgets/picture_selection_exercise_view.dart';
 
 class ExercisePage extends ConsumerWidget {
   final String lessonId;
@@ -72,32 +73,6 @@ class ExercisePage extends ConsumerWidget {
 
                 const Spacer(),
 
-                if (exerciseState.status == ExerciseRunStatus.answering &&
-                    currentExercise.type == ExerciseType.pictureSelection)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        'Simulasi jawaban (nanti diganti input beneran)',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          exerciseController.submitAnswer(isCorrect: true);
-                        },
-                        child: const Text('Jawab benar'),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: () {
-                          exerciseController.submitAnswer(isCorrect: false);
-                        },
-                        child: const Text('Jawab salah'),
-                      ),
-                    ],
-                  ),
-
                 if (exerciseState.status == ExerciseRunStatus.feedback)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,30 +130,12 @@ class ExercisePage extends ConsumerWidget {
         );
 
       case ExerciseType.pictureSelection:
-        final data = exercise.pictureSelection;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tipe: Picture Selection',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Pilih gambar yang sesuai dengan kata berikut:',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '"${data?.word ?? '-'}',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Untuk sementara, gambar belum ditampilkan - hanya teks placeholder',
-              style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),
-          ],
+        final data = exercise.pictureSelection!;
+        return PictureSelectionExerciseView(
+          key: ValueKey(exercise.id),
+          data: data,
+          state: exerciseState,
+          onSubmit: onSubmit,
         );
     }
   }
