@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mini_duolingo/data/lesson_providers.dart';
+import 'package:mini_duolingo/data/user_progress_providers.dart';
 import 'package:mini_duolingo/data/models/exercise.dart';
 import 'package:mini_duolingo/features/exercise/application/exercise_controller.dart';
 import 'package:mini_duolingo/features/exercise/presentation/widgets/translation_exercise_view.dart';
@@ -15,6 +16,21 @@ class ExercisePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<ExerciseState>(exerciseControllerProvider, (previous, next) {
+      final wasCompleted = previous?.status == ExerciseRunStatus.completed;
+      final isCompleted = next.status == ExerciseRunStatus.completed;
+
+      if (!wasCompleted && isCompleted) {
+        final correctAnswers = next.correctCount;
+        ref
+            .read(userProgressProvider.notifier)
+            .applyLessonCompletion(
+              lessonId: lessonId,
+              correctAnswers: correctAnswers,
+            );
+      }
+    });
+
     final lessonAsync = ref.watch(lessonByIdProvider(lessonId));
     final exerciseState = ref.watch(exerciseControllerProvider);
     final exerciseController = ref.read(exerciseControllerProvider.notifier);
