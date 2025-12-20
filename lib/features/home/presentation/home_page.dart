@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mini_duolingo/core/routing/app_router.dart';
 import 'package:mini_duolingo/data/user_progress_providers.dart';
 
 class HomePage extends ConsumerWidget {
@@ -51,7 +52,7 @@ class HomePage extends ConsumerWidget {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.go('/lessons');
+                      context.goNamed(AppRoute.lessons.name);
                     },
                     child: const Text('Lihat Lessons'),
                   ),

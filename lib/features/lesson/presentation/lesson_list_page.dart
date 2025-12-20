@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mini_duolingo/core/routing/app_router.dart';
 import 'package:mini_duolingo/data/lesson_providers.dart';
 import 'package:mini_duolingo/data/user_progress_providers.dart';
 
@@ -31,18 +32,51 @@ class LessonListPage extends ConsumerWidget {
               final lesson = lessons[index];
               final isCompleted =
                   progress?.completedLessonIds.contains(lesson.id) ?? false;
+
+              bool isUnlocked = true;
+              if (index > 0) {
+                final previousLesson = lessons[index - 1];
+                final prefCompleted =
+                    progress?.completedLessonIds.contains(previousLesson.id) ??
+                    false;
+                isUnlocked = prefCompleted;
+              }
+
+              IconData leadingIcon;
+              Color leadingColor;
+
+              if (!isUnlocked) {
+                leadingIcon = Icons.lock;
+                leadingColor = Colors.grey;
+              } else if (isCompleted) {
+                leadingIcon = Icons.check_circle;
+                leadingColor = Colors.green;
+              } else {
+                leadingIcon = Icons.radio_button_unchecked;
+                leadingColor = Colors.grey;
+              }
+
               return ListTile(
-                leading: Icon(
-                  isCompleted
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  color: isCompleted ? Colors.green : Colors.grey,
-                ),
+                leading: Icon(leadingIcon, color: leadingColor),
                 title: Text(lesson.title),
                 subtitle: Text(lesson.description),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
-                  context.go('/exercise/${lesson.id}');
+                  if (!isUnlocked) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Selesaikan lesson sebelumnya untuk menyelesaikan lesson ini',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  context.goNamed(
+                    AppRoute.lessonExercise.name,
+                    pathParameters: {'lessonId': lesson.id},
+                  );
                 },
               );
             },
