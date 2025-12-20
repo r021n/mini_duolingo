@@ -5,28 +5,30 @@ import 'package:mini_duolingo/features/home/presentation/home_page.dart';
 import 'package:mini_duolingo/features/lesson/presentation/lesson_list_page.dart';
 import 'package:mini_duolingo/features/splash/presentation/splash_page.dart';
 
+enum AppRoute { splash, home, lessons, lessonExercise }
+
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',
-        name: 'splash',
+        name: AppRoute.splash.name,
         builder: (context, state) => SplashPage(),
       ),
       GoRoute(
         path: '/home',
-        name: 'home',
+        name: AppRoute.home.name,
         builder: (context, state) => HomePage(),
       ),
       GoRoute(
         path: '/lessons',
-        name: 'lessons',
+        name: AppRoute.lessons.name,
         builder: (context, state) => LessonListPage(),
       ),
       GoRoute(
         path: '/exercise/:lessonId',
-        name: 'exercise',
+        name: AppRoute.lessonExercise.name,
         builder: (context, state) {
           final lessonId = state.pathParameters['lessonId']!;
           return ExercisePage(lessonId: lessonId);
