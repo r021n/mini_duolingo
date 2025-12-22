@@ -16,4 +16,17 @@ class Course {
     required this.learningLanguageCode,
     required this.units,
   });
+
+  factory Course.fromJson(Map<String, dynamic> json) {
+    return Course(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String? ?? "",
+      fromLanguageCode: json['fromLanguageCode'] as String,
+      learningLanguageCode: json['learningLanguageCode'] as String,
+      units: (json['units'] as List<dynamic>)
+          .map((u) => Unit.fromJson(u as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
