@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mini_duolingo/core/routing/app_router.dart';
+import 'package:mini_duolingo/core/theme/app_theme.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -16,10 +17,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Mini Duolingo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.theme,
       routerConfig: router,
     );
   }
