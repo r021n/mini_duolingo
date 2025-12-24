@@ -66,9 +66,7 @@ class HomePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-
                 const Spacer(),
-
                 Container(
                   padding: const EdgeInsets.all(30),
                   decoration: BoxDecoration(
@@ -83,31 +81,20 @@ class HomePage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Ayo belajar lagi!',
+                  "Ayo belajar lagi!",
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const Text(
-                  'Selesaikan lesson hari ini untuk menjaga streakmu',
+                  "Selesaikan lesson hari ini untuk menjaga streakmu.",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey),
                 ),
-
                 const Spacer(),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.greenPrimary,
-                      elevation: 6,
-                      shadowColor: AppTheme.greenDark,
-                    ),
-                    onPressed: () {
-                      context.goNamed(AppRoute.lessons.name);
-                    },
-                    child: const Text('MULAI BELAJAR'),
-                  ),
+                _Custom3DButton(
+                  onPressed: () {
+                    context.goNamed(AppRoute.lessons.name);
+                  },
+                  text: 'MULAI BELAJAR',
                 ),
                 const SizedBox(height: 40),
               ],
@@ -127,7 +114,7 @@ class HomePage extends ConsumerWidget {
                 color: Colors.red,
               ),
               const SizedBox(height: 10),
-              Text('Ups, ada masalah $error'),
+              Text('Ups! Ada masalah: $error'),
             ],
           ),
         ),
@@ -140,7 +127,7 @@ class HomePage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Reset Progress?'),
-        content: const Text('Semua XP dan streak akan kembali ke 0'),
+        content: const Text('Semua XP dan Streak akan kembali ke 0.'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         actions: [
           TextButton(
@@ -167,6 +154,97 @@ class HomePage extends ConsumerWidget {
   }
 }
 
+class _Custom3DButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  final String text;
+
+  const _Custom3DButton({required this.onPressed, required this.text});
+
+  @override
+  State<_Custom3DButton> createState() => _Custom3DButtonState();
+}
+
+class _Custom3DButtonState extends State<_Custom3DButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    const Color buttonColor = Color(0xFF58CC02);
+    const Color shadowColor = Color(0xFF46A302);
+    const Color pressedColor = Color(0xFF4CAF50);
+    const double height = 56.0;
+    const double depth = 8.0;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onPressed();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: SizedBox(
+        height: height,
+        width: double.infinity,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              top: _isPressed ? depth : depth,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _isPressed ? Colors.transparent : shadowColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+            Positioned(
+              top: _isPressed ? depth : 0,
+              left: 0,
+              right: 0,
+              bottom: _isPressed ? 0 : depth,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _isPressed ? pressedColor : buttonColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                alignment: Alignment.center,
+                child: Stack(
+                  children: [
+                    Text(
+                      widget.text,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 2
+                          ..color = shadowColor,
+                      ),
+                    ),
+                    Text(
+                      widget.text,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -188,13 +266,6 @@ class _StatCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey.shade200, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade100,
-            offset: const Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
       ),
       child: Column(
         children: [
