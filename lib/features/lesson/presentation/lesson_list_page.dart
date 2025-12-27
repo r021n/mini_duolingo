@@ -176,7 +176,7 @@ class _LessonPathItem extends StatelessWidget {
                     width: 12,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5E5E5),
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -276,7 +276,7 @@ class __LevelButton3DState extends State<_LevelButton3D> {
                 left: 15,
                 child: Container(
                   width: size * 0.2,
-                  height: size * 0.1,
+                  height: size * 0.2,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(10),
