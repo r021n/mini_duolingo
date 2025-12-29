@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mini_duolingo/core/theme/app_theme.dart';
 import 'package:mini_duolingo/data/models/exercise.dart';
 import 'package:mini_duolingo/features/exercise/application/exercise_controller.dart';
 
@@ -42,118 +43,102 @@ class _WordTilesExerciseViewState extends State<WordTilesExerciseView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Tipe: Word Tiles",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          "Susun kata-kata berikut menjadi kalimat yang benar",
-          style: TextStyle(fontSize: 16),
-        ),
-        const SizedBox(height: 12),
-
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade400),
+          "Susun kalimat ini",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textDark,
           ),
-          child: _selectedTokens.isEmpty
-              ? const Text(
-                  'Tap kata-kata di bawah untu menyusun kalimat',
-                  style: TextStyle(color: Colors.grey),
-                )
-              : Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _selectedTokens
-                      .map((token) => Chip(label: Text(token)))
-                      .toList(),
-                ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 32),
 
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableTokens.map((token) {
-            final isDistractor = !widget.data.correctTokens.contains(token);
+        // Area Jawaban (Garis-garis / Kotak Kosong)
+        Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(minHeight: 120),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 12,
+            children: _selectedTokens.map((token) {
+              return GestureDetector(
+                onTap: isAnswering
+                    ? () => setState(() {
+                        _selectedTokens.remove(token);
+                        _availableTokens.add(token);
+                      })
+                    : null,
+                child: _WordTile(text: token, isSelected: true),
+              );
+            }).toList(),
+          ),
+        ),
 
-            return ChoiceChip(
-              label: Text(token),
-              selected: false,
-              onSelected: isAnswering
-                  ? (_) {
-                      setState(() {
+        // Garis pembatas area jawaban
+        Divider(color: Colors.grey.shade300, thickness: 2, height: 40),
+
+        // Area Pilihan Kata
+        Center(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: _availableTokens.map((token) {
+              return GestureDetector(
+                onTap: isAnswering
+                    ? () => setState(() {
                         _availableTokens.remove(token);
                         _selectedTokens.add(token);
-                      });
-                    }
-                  : null,
-              backgroundColor: isDistractor
-                  ? Colors.grey.shade200
-                  : Colors.blue.shade50,
-            );
-          }).toList(),
+                      })
+                    : null,
+                child: _WordTile(text: token, isSelected: false),
+              );
+            }).toList(),
+          ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
 
         if (isAnswering)
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _selectedTokens.isEmpty
-                      ? null
-                      : () {
-                          setState(() {
-                            final last = _selectedTokens.removeLast();
-                            _availableTokens.add(last);
-                          });
-                        },
-                  child: const Text('Undo'),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.greenPrimary,
+                padding: const EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _resetTokens();
-                    });
-                  },
-                  child: const Text('Reset'),
+              onPressed: _selectedTokens.isEmpty
+                  ? null
+                  : () {
+                      final isCorrect = _checkAnswer();
+                      widget.onSubmit(isCorrect);
+                    },
+              child: const Text(
+                'CEK',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _selectedTokens.isEmpty
-                      ? null
-                      : () {
-                          final isCorrect = _checkAnswer();
-                          widget.onSubmit(isCorrect);
-                        },
-                  child: const Text('Submit'),
-                ),
-              ),
-            ],
+            ),
           )
-        else
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Kalimat yang benar',
-                style: TextStyle(fontWeight: FontWeight.bold),
+        else if (widget.state.lastAnswerCorrect == false)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              "Jawaban benar: ${widget.data.correctSentence}",
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.data.correctSentence,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ],
+            ),
           ),
       ],
     );
@@ -161,16 +146,46 @@ class _WordTilesExerciseViewState extends State<WordTilesExerciseView> {
 
   bool _checkAnswer() {
     final correct = widget.data.correctTokens;
-
-    if (_selectedTokens.length != correct.length) {
-      return false;
-    }
-
+    if (_selectedTokens.length != correct.length) return false;
     for (var i = 0; i < correct.length; i++) {
-      if (_selectedTokens[i] != correct[i]) {
-        return false;
-      }
+      if (_selectedTokens[i] != correct[i]) return false;
     }
     return true;
+  }
+}
+
+// Widget Kecil untuk Kotak Kata (Tile)
+class _WordTile extends StatelessWidget {
+  final String text;
+  final bool
+  isSelected; // Jika selected, tampilkan di atas, jika false tampil di bank kata
+
+  const _WordTile({required this.text, required this.isSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            offset: const Offset(0, 3), // Efek 3D simple
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.textDark,
+        ),
+      ),
+    );
   }
 }
